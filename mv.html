@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hành Trình Của Chúng Ta - MV Kỷ Niệm</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React 18 & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Chuẩn tiếng Việt 100% -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #0c1524;
+    }
+
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+
+    .font-heading {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Bầu trời chuẩn màu đồng bộ các trang trước */
+    .sky-bg {
+      background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 35%, #bae6fd 70%, #f0f9ff 100%);
+    }
+
+    /* Mây trôi nền */
+    @keyframes cloudDrift {
+      0% { transform: translateX(-25vw); }
+      100% { transform: translateX(125vw); }
+    }
+    .cloud-drift-1 { animation: cloudDrift 50s linear infinite; }
+    .cloud-drift-2 { animation: cloudDrift 70s linear infinite 10s; }
+    .cloud-drift-3 { animation: cloudDrift 40s linear infinite 5s; }
+
+    /* Cánh quạt quay tít mù */
+    @keyframes spinPropeller {
+      0% { transform: scaleY(1); opacity: 0.9; }
+      50% { transform: scaleY(0.12); opacity: 0.45; }
+      100% { transform: scaleY(1); opacity: 0.9; }
+    }
+    .spin-propeller {
+      animation: spinPropeller 0.08s linear infinite;
+      transform-origin: center;
+    }
+
+    /* Đĩa xoay nhạc dễ thương */
+    @keyframes vinylRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-vinyl-spin {
+      animation: vinylRotate 4s linear infinite;
+    }
+
+    /* Panda mini bước đi trên thanh Spotify */
+    @keyframes miniPandaWaddle {
+      0%, 100% { transform: translateY(0px) rotate(-6deg); }
+      50% { transform: translateY(-4px) rotate(6deg); }
+    }
+    .animate-mini-panda {
+      animation: miniPandaWaddle 0.4s ease-in-out infinite;
+    }
+
+    /* Hiệu ứng đếm ngược 3 2 1 */
+    @keyframes countdownPop {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.15); opacity: 1; }
+      80% { transform: scale(0.95); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-countdown-pop {
+      animation: countdownPop 0.85s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+    }
+
+    /* Hiệu ứng thu khung nhẹ chuẩn Cinema */
+    .cinema-viewport {
+      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), border-radius 1.2s ease, box-shadow 1.2s ease;
+    }
+    .cinema-viewport-shrunk {
+      transform: scale(0.972);
+      border-radius: 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Ảnh Polaroid chao liệng đung đưa nhẹ */
+    @keyframes polaroidFloat {
+      0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+      50% { transform: translateY(-7px) rotate(calc(var(--rot, 0deg) + 1.5deg)); }
+    }
+    .animate-polaroid-float {
+      animation: polaroidFloat 3s ease-in-out infinite;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Container tối ưu GPU 60-120fps cho đoàn ảnh */
+    .smooth-track-container {
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+
+    /* Máy bay bay ngang kết thúc lướt qua bầu trời sang qua.html */
+    @keyframes planeFlyAcrossFinal {
+      0% {
+        transform: translate(-45vw, 42vh) rotate(8deg) scale(0.8);
+        opacity: 0;
+      }
+      15% {
+        opacity: 1;
+      }
+      50% {
+        transform: translate(35vw, 25vh) rotate(-3deg) scale(1.05);
+      }
+      80% {
+        transform: translate(85vw, 32vh) rotate(4deg) scale(1.1);
+      }
+      100% {
+        transform: translate(145vw, 15vh) rotate(2deg) scale(1.15);
+        opacity: 1;
+      }
+    }
+    .animate-plane-final-fly {
+      animation: planeFlyAcrossFinal 3.8s cubic-bezier(0.35, 0, 0.2, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Style cho Spotify Seekbar */
+    .spotify-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 9999px;
+      outline: none;
+      cursor: pointer;
+    }
+    .spotify-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      transition: transform 0.1s;
+    }
+    .spotify-slider:hover::-webkit-slider-thumb {
+      transform: scale(1.35);
+      background: #38bdf8;
+    }
+
+    /* Background ảnh mờ nghệ thuật chuyển cảnh êm dịu */
+    .bg-blur-photo {
+      transition: background-image 0.8s ease-in-out, opacity 0.8s ease-in-out;
+      will-change: background-image, opacity;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen overflow-hidden flex items-center justify-center bg-slate-950">
+
+  <div id="root" class="w-full h-full flex items-center justify-center"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // TỔNG SỐ ẢNH: ĐÚNG 51 ẢNH (Từ 1.jpg tới 51.jpg)
+    const TOTAL_PHOTOS = 51;
+
+    // TẠO DANH SÁCH 51 BỨC ẢNH: Bạn chỉ cần đặt các file 1.jpg -> 51.jpg cùng cấp với file html
+    const PHOTO_LIST = Array.from({ length: TOTAL_PHOTOS }, (_, index) => {
+      const id = index + 1;
+      return {
+        id: id,
+        imgSrc: `${id}.jpg`, // Đổi ảnh gốc chỉ cần thay 1.jpg, 2.jpg...
+        fallbackSrc: `https://picsum.photos/seed/love${id}/450/450`,
+        rotation: (index % 2 === 0 ? 1 : -1) * (1.5 + (index % 4) * 0.8)
+      };
+    });
+
+    // FILE NHẠC GỐC: Bạn chỉ cần đặt file music.mp3 cùng cấp thư mục
+    const DEFAULT_TRACK = {
+      src: 'music.mp3',
+      name: 'Hành Trình Của Chúng Ta',
+      artist: 'Nẹo & Mèo ',
+      defaultDuration: 52
+    };
+
+    // COMPONENT: MÁY BAY CHIBI PANDA DẪN ĐẦU ĐOÀN ẢNH
+    const CuteLeaderPlane = () => (
+      <div className="relative flex items-center select-none filter drop-shadow-[0_15px_30px_rgba(14,116,144,0.3)]">
+        {/* Dải nơ ruy-băng kết nối với đoàn ảnh */}
+        <div className="hidden sm:flex items-center mr-[-4px] z-10">
+          <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border-2 border-pink-200 shadow-md text-xs font-black text-rose-500 whitespace-nowrap flex items-center gap-1.5">
+            <span></span>
+            <span>Chuyến bay kỷ niệm chúng ta</span>
+            <span></span>
+          </div>
+          <svg className="w-12 h-6 -ml-1 text-pink-400" viewBox="0 0 40 20">
+            <path d="M0,10 Q20,18 40,10" fill="none" stroke="#f472b6" strokeWidth="3" strokeDasharray="5 3" />
+          </svg>
+        </div>
+
+        {/* Thân phi cơ chibi */}
+        <svg className="w-48 h-36 md:w-56 md:h-40 transform relative z-20" viewBox="0 0 280 200" fill="none">
+          <defs>
+            <linearGradient id="bodyGradMV" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="45%" stopColor="#fdf4ff" />
+              <stop offset="100%" stopColor="#fbcfe8" />
+            </linearGradient>
+            <linearGradient id="wingGradMV" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#0284c7" />
+            </linearGradient>
+            <linearGradient id="glassGradMV" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#bae6fd" />
+              <stop offset="60%" stopColor="#7dd3fc" />
+              <stop offset="100%" stopColor="#38bdf8" />
+            </linearGradient>
+          </defs>
+
+          <ellipse cx="65" cy="85" rx="30" ry="12" fill="#0284c7" transform="rotate(-18 65 85)" />
+          <path d="M35 110 C25 65, 45 40, 68 50 C75 75, 70 95, 60 115 Z" fill="#f43f5e" stroke="#e11d48" strokeWidth="2.5" />
+          <circle cx="53" cy="65" r="5" fill="#ffffff" />
+
+          {/* Thân máy bay */}
+          <path d="M40 120 C40 85, 80 60, 160 62 C230 64, 255 95, 255 122 C255 152, 215 168, 140 166 C70 164, 40 145, 40 120 Z" 
+                fill="url(#bodyGradMV)" stroke="#f472b6" strokeWidth="3.5" />
+          <path d="M60 135 C95 160, 180 160, 240 130 C220 158, 160 166, 75 160 Z" fill="#f472b6" opacity="0.35" />
+
+          <ellipse cx="175" cy="85" rx="42" ry="32" fill="url(#glassGradMV)" stroke="#38bdf8" strokeWidth="3" />
+
+          {/* Phi công Panda */}
+          <g transform="translate(152, 57)">
+            <path d="M14 36 Q8 42 4 48 Q10 46 16 42 Z" fill="#ef4444" className="animate-pulse" />
+            <rect x="13" y="32" width="20" height="7" rx="3.5" fill="#ef4444" />
+            <circle cx="9" cy="11" r="7.5" fill="#18181b" />
+            <circle cx="36" cy="11" r="7.5" fill="#18181b" />
+            <ellipse cx="22.5" cy="23" rx="18.5" ry="16" fill="#ffffff" stroke="#f1f5f9" strokeWidth="1.2" />
+            <ellipse cx="14.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(-18 14.5 20.5)" />
+            <ellipse cx="30.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(18 30.5 20.5)" />
+            <circle cx="15.5" cy="20" r="2.8" fill="#ffffff" />
+            <circle cx="16.2" cy="19.5" r="1.3" fill="#09090b" />
+            <circle cx="29.5" cy="20" r="2.8" fill="#ffffff" />
+            <circle cx="28.8" cy="19.5" r="1.3" fill="#09090b" />
+            <path d="M13 10 C16 4, 29 4, 32 10 Z" fill="#92400e" />
+            <rect x="11.5" y="9" width="22" height="3.5" rx="1.75" fill="#b45309" />
+            <ellipse cx="22.5" cy="26.5" rx="3" ry="2" fill="#18181b" />
+            <path d="M19.5 29 Q22.5 32 25.5 29" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+            <circle cx="10" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+            <circle cx="35" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+          </g>
+
+          <circle cx="218" cy="128" r="8" fill="#fda4af" opacity="0.8" />
+          <circle cx="228" cy="112" r="5" fill="#1e293b" />
+          <circle cx="229.5" cy="110.5" r="2" fill="#ffffff" />
+          <path d="M236 124 Q240 130 246 124" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          
+          <path d="M110 126 C110 126, 80 185, 125 185 C165 185, 185 130, 185 126 Z" 
+                fill="url(#wingGradMV)" stroke="#0284c7" strokeWidth="2.5" />
+          
+          <ellipse cx="255" cy="118" rx="7" ry="12" fill="#f43f5e" />
+          <g className="spin-propeller" style={{ transformOrigin: '258px 118px' }}>
+            <ellipse cx="258" cy="85" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+            <ellipse cx="258" cy="151" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+          </g>
+          <circle cx="258" cy="118" r="6" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" />
+        </svg>
+      </div>
+    );
+
+    // COMPONENT: THẺ ẢNH POLAROID TO HƠN VỚI CHỮ "Nẹo & Mèo 💕" PHÍA DƯỚI
+    const PolaroidCard = ({ photo }) => {
+      const [imgError, setImgError] = useState(false);
+
+      return (
+        <div 
+          className="animate-polaroid-float relative flex-shrink-0 bg-white p-3 sm:p-3.5 pb-3 sm:pb-4 rounded-3xl shadow-[0_18px_40px_rgba(14,116,144,0.28)] border-3 border-white/95 select-none group"
+          style={{
+            '--rot': `${photo.rotation}deg`,
+            width: '215px',
+            height: '275px'
+          }}
+        >
+          {/* Dây kẹp gỗ / nơ hồng phía trên */}
+          <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
+            <div className="w-7 h-2.5 bg-pink-400 rounded-full shadow-sm"></div>
+            <div className="w-2 h-2.5 bg-amber-600 rounded-sm -mt-0.5"></div>
+          </div>
+
+          {/* Vùng hiển thị ảnh kỷ niệm to rõ nét */}
+          <div className="w-full h-[195px] sm:h-[205px] rounded-2xl overflow-hidden bg-pink-50 relative">
+            <img 
+              src={imgError ? photo.fallbackSrc : photo.imgSrc} 
+              alt="Kỷ niệm Nẹo & Mèo"
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-pink-500/15 via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
+          {/* Dưới ảnh hiển thị chữ "Nẹo & Mèo 💕" */}
+          <div className="mt-2 flex items-center justify-center">
+            <span className="font-handwriting text-lg sm:text-xl font-bold text-rose-500 tracking-wide">
+              tinhyeunhoxiu
+            </span>
+          </div>
+        </div>
+      );
+    };
+
+    // COMPONENT: MÁY BAY BAY NGANG QUA BẦU TRỜI KHI KẾT THÚC
+    const PlaneFlyAcross = () => (
+      <div className="relative flex items-center select-none filter drop-shadow-[0_20px_45px_rgba(14,116,144,0.35)]">
+        {/* Dải Banner bay lượn chúc mừng */}
+        <div className="flex items-center mr-[-4px] z-10">
+          <div className="flex items-center bg-white/95 backdrop-blur-md px-5 py-3 rounded-full shadow-[0_16px_35px_rgba(244,63,94,0.35)] border-3 border-pink-300 gap-2">
+            <span className="text-xl animate-bounce"></span>
+            <div className="text-sm font-black text-rose-600 whitespace-nowrap">
+              Chuyến bay đưa đến món quà của em
+            </div>
+            <span className="text-base animate-pulse"></span>
+          </div>
+
+          <svg className="w-16 h-8 -ml-1 text-pink-400" viewBox="0 0 60 20">
+            <path d="M0,10 Q30,18 60,10" fill="none" stroke="#f472b6" strokeWidth="3.5" strokeDasharray="6 3" />
+          </svg>
+        </div>
+
+        {/* Máy bay Chibi Panda */}
+        <svg className="w-52 h-40 md:w-64 md:h-48 transform relative z-20" viewBox="0 0 280 200" fill="none">
+          <defs>
+            <linearGradient id="bodyGradMV2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="50%" stopColor="#fdf4ff" />
+              <stop offset="100%" stopColor="#fbcfe8" />
+            </linearGradient>
+            <linearGradient id="wingGradMV2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#0284c7" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="65" cy="85" rx="30" ry="12" fill="#0284c7" transform="rotate(-18 65 85)" />
+          <path d="M35 110 C25 65, 45 40, 68 50 C75 75, 70 95, 60 115 Z" fill="#f43f5e" stroke="#e11d48" strokeWidth="2.5" />
+          <circle cx="53" cy="65" r="5" fill="#ffffff" />
+          <path d="M40 120 C40 85, 80 60, 160 62 C230 64, 255 95, 255 122 C255 152, 215 168, 140 166 C70 164, 40 145, 40 120 Z" 
+                fill="url(#bodyGradMV2)" stroke="#f472b6" strokeWidth="3.5" />
+          <path d="M60 135 C95 160, 180 160, 240 130 C220 158, 160 166, 75 160 Z" fill="#f472b6" opacity="0.35" />
+          <ellipse cx="175" cy="85" rx="42" ry="32" fill="#7dd3fc" stroke="#38bdf8" strokeWidth="3" />
+          
+          {/* Panda */}
+          <g transform="translate(152, 57)">
+            <path d="M14 36 Q8 42 4 48 Q10 46 16 42 Z" fill="#ef4444" className="animate-pulse" />
+            <rect x="13" y="32" width="20" height="7" rx="3.5" fill="#ef4444" />
+            <circle cx="9" cy="11" r="7.5" fill="#18181b" />
+            <circle cx="36" cy="11" r="7.5" fill="#18181b" />
+            <ellipse cx="22.5" cy="23" rx="18.5" ry="16" fill="#ffffff" />
+            <ellipse cx="14.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(-18 14.5 20.5)" />
+            <ellipse cx="30.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(18 30.5 20.5)" />
+            <circle cx="15.5" cy="20" r="2.8" fill="#ffffff" />
+            <circle cx="29.5" cy="20" r="2.8" fill="#ffffff" />
+            <path d="M13 10 C16 4, 29 4, 32 10 Z" fill="#92400e" />
+            <ellipse cx="22.5" cy="26.5" rx="3" ry="2" fill="#18181b" />
+            <circle cx="10" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+            <circle cx="35" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+          </g>
+
+          <circle cx="218" cy="128" r="8" fill="#fda4af" opacity="0.8" />
+          <circle cx="228" cy="112" r="5" fill="#1e293b" />
+          <circle cx="229.5" cy="110.5" r="2" fill="#ffffff" />
+          <path d="M236 124 Q240 130 246 124" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <path d="M110 126 C110 126, 80 185, 125 185 C165 185, 185 130, 185 126 Z" 
+                fill="url(#wingGradMV2)" stroke="#0284c7" strokeWidth="2.5" />
+          <ellipse cx="255" cy="118" rx="7" ry="12" fill="#f43f5e" />
+          <g className="spin-propeller" style={{ transformOrigin: '258px 118px' }}>
+            <ellipse cx="258" cy="85" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+            <ellipse cx="258" cy="151" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+          </g>
+          <circle cx="258" cy="118" r="6" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" />
+        </svg>
+      </div>
+    );
+
+    // TRANG CHÍNH MV.HTML
+    function MVPage() {
+      // appPhase: 'waiting_auto' (2s đầu) -> 'playing' (tự động bay vào) -> 'plane_fly_final'
+      const [appPhase, setAppPhase] = useState('waiting_auto');
+      const [isPlaying, setIsPlaying] = useState(false);
+      const [currentTime, setCurrentTime] = useState(0);
+      const [duration, setDuration] = useState(DEFAULT_TRACK.defaultDuration);
+      const [volume, setVolume] = useState(0.85);
+      const [isMuted, setIsMuted] = useState(false);
+      const [centerIndex, setCenterIndex] = useState(0);
+
+      const audioRef = useRef(null);
+      const audioCtxRef = useRef(null);
+      const synthTimerRef = useRef(null);
+      const photoTrackRef = useRef(null);
+      const rafIdRef = useRef(null);
+      const lastCenterIdxRef = useRef(0);
+
+      // KHỞI TẠO VÀ TỰ ĐỘNG PHÁT FILE NHẠC GỐC music.mp3 NGAY LẬP TỨC (KHÔNG CẦN CHẠM)
+      useEffect(() => {
+        const audio = new Audio('music.mp3');
+        audio.preload = 'auto';
+        audio.loop = false;
+        audioRef.current = audio;
+
+        audio.addEventListener('loadedmetadata', () => {
+          if (audio.duration && !isNaN(audio.duration)) {
+            setDuration(audio.duration);
+          }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+          setCurrentTime(audio.currentTime);
+        });
+
+        audio.addEventListener('ended', () => {
+          handleMusicFinished();
+        });
+
+        // Bật phát tự động ngay tức thì: Bắt đầu nhẹ và tự động tăng âm lượng
+        const forceAutoplay = () => {
+          audio.volume = 0.05;
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              setIsPlaying(true);
+              // Fade âm lượng lên mượt mà mà không bị trình duyệt chặn
+              let currentVol = 0.05;
+              const fadeInterval = setInterval(() => {
+                if (currentVol < volume) {
+                  currentVol = Math.min(volume, currentVol + 0.15);
+                  if (audioRef.current) audioRef.current.volume = currentVol;
+                } else {
+                  clearInterval(fadeInterval);
+                }
+              }, 100);
+            }).catch(() => {
+              // Dự phòng Web Audio API nếu bị chặn sâu
+              startMelody();
+              setIsPlaying(true);
+            });
+          }
+        };
+
+        // Kích hoạt ngay lập tức khi trang vừa load
+        forceAutoplay();
+
+        return () => {
+          audio.pause();
+          audio.src = '';
+        };
+      }, []);
+
+      // ĐIỀU CHỈNH ÂM LƯỢNG FILE NHẠC
+      useEffect(() => {
+        if (audioRef.current) {
+          audioRef.current.volume = isMuted ? 0 : volume;
+        }
+      }, [volume, isMuted]);
+
+      // TỰ ĐỘNG BẮT ĐẦU SAU ĐÚNG 2S (HOÀN TOÀN TỰ ĐỘNG, KHÔNG CẦN CHẠM)
+      useEffect(() => {
+        const autoStartTimer = setTimeout(() => {
+          setAppPhase('playing');
+          setIsPlaying(true);
+          setCurrentTime(0);
+
+          // Phát nhạc trực tiếp
+          if (audioRef.current) {
+            audioRef.current.play().catch(() => {
+              // Dự phòng synth nếu chưa nạp được file audio
+              startMelody();
+            });
+          } else {
+            startMelody();
+          }
+
+          confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.5 },
+            colors: ['#38bdf8', '#f43f5e', '#facc15', '#ffffff']
+          });
+        }, 2000);
+
+        return () => clearTimeout(autoStartTimer);
+      }, []);
+
+      // DỰ PHÒNG MELODY SYNTHESIZER NẾU CHƯA CÓ FILE MUSIC.MP3
+      const startMelody = () => {
+        if (audioRef.current && audioRef.current.readyState >= 2) {
+          audioRef.current.play().catch(e => console.log("Audio play error, fallback to synth:", e));
+          return;
+        }
+        try {
+          if (!audioCtxRef.current) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            audioCtxRef.current = new AudioCtx();
+          }
+          if (audioCtxRef.current.state === 'suspended') {
+            audioCtxRef.current.resume();
+          }
+
+          const ctx = audioCtxRef.current;
+          const notes = [
+            523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 880.00, 783.99,
+            659.25, 587.33, 523.25, 659.25, 783.99, 880.00, 1046.50, 1174.66
+          ];
+          let noteIdx = 0;
+
+          if (synthTimerRef.current) clearInterval(synthTimerRef.current);
+
+          synthTimerRef.current = setInterval(() => {
+            if (isMuted) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(notes[noteIdx % notes.length], ctx.currentTime);
+
+            const vol = isMuted ? 0 : volume * 0.15;
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.65);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.7);
+
+            noteIdx++;
+          }, 350);
+
+        } catch (e) {
+          console.warn("Synthesizer audio init fallback:", e);
+        }
+      };
+
+      const stopMelody = () => {
+        if (synthTimerRef.current) {
+          clearInterval(synthTimerRef.current);
+          synthTimerRef.current = null;
+        }
+      };
+
+      // NÚT PLAY / PAUSE: ĐỒNG BỘ CẢ FILE NHẠC VÀ BỘ DỰ PHÒNG
+      const handleTogglePlay = () => {
+        const next = !isPlaying;
+        setIsPlaying(next);
+
+        if (next) {
+          // Bật tiếp tục phát nhạc
+          if (audioRef.current && audioRef.current.readyState >= 2) {
+            audioRef.current.play().catch(() => startMelody());
+          } else {
+            startMelody();
+          }
+        } else {
+          // Tạm dừng nhạc ngay lập tức khi ấn dừng
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          stopMelody();
+        }
+      };
+
+      // VÒNG LẶP RENDER CHUYỂN ĐỘNG SIÊU MƯỢT BẰNG requestAnimationFrame (60 - 120 FPS)
+      useEffect(() => {
+        if (appPhase !== 'playing' || !isPlaying) {
+          if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+          return;
+        }
+
+        const cardWidth = 235;
+        const totalWidthPx = TOTAL_PHOTOS * cardWidth + 500;
+        const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+        const startX = -totalWidthPx;
+        const endX = screenWidth + 150;
+
+        let lastTimeSnapshot = audioRef.current ? audioRef.current.currentTime : 0;
+        let lastTimestamp = performance.now();
+
+        const updateFrame = (now) => {
+          let curr = 0;
+          if (audioRef.current && audioRef.current.duration && !audioRef.current.paused) {
+            curr = audioRef.current.currentTime;
+          } else {
+            // Dự phòng nội suy thời gian siêu mượt theo delta time nếu dùng synthesizer
+            const dt = (now - lastTimestamp) / 1000;
+            curr = lastTimeSnapshot + dt;
+            if (curr >= duration) {
+              handleMusicFinished();
+              return;
+            }
+          }
+          lastTimestamp = now;
+          lastTimeSnapshot = curr;
+
+          // Cập nhật vị trí trực tiếp vào phần cứng GPU qua CSS Transform (không kích hoạt React re-render)
+          const ratio = Math.min(1, Math.max(0, curr / (duration || 1)));
+          const currentTranslateX = startX + (endX - startX) * ratio;
+
+          if (photoTrackRef.current) {
+            photoTrackRef.current.style.transform = `translate3d(${currentTranslateX}px, 0, 0)`;
+          }
+
+          // Cập nhật ảnh mờ nền nếu đổi sang ảnh khác (tránh render thừa)
+          const currentCenterIdx = Math.min(
+            TOTAL_PHOTOS - 1,
+            Math.max(0, Math.floor(ratio * TOTAL_PHOTOS))
+          );
+          if (currentCenterIdx !== lastCenterIdxRef.current) {
+            lastCenterIdxRef.current = currentCenterIdx;
+            setCenterIndex(currentCenterIdx);
+          }
+
+          rafIdRef.current = requestAnimationFrame(updateFrame);
+        };
+
+        rafIdRef.current = requestAnimationFrame(updateFrame);
+
+        return () => {
+          if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+        };
+      }, [appPhase, isPlaying, duration]);
+
+      // KHI HẾT NHẠC: MÁY BAY BAY NGANG QUA VÀ CHUYỂN QUA.HTML
+      const handleMusicFinished = () => {
+        setIsPlaying(false);
+        stopMelody();
+
+        setAppPhase('plane_fly_final');
+
+        confetti({
+          particleCount: 220,
+          spread: 120,
+          origin: { y: 0.5 },
+          colors: ['#ffffff', '#f43f5e', '#38bdf8', '#fbbf24']
+        });
+
+        setTimeout(() => {
+          try {
+            if (window.location && typeof window.location.href === 'string') {
+              const targetUrl = new URL('qua.html', window.location.href).href;
+              window.location.assign(targetUrl);
+            }
+          } catch (err) {
+            console.warn("Chuyển trang sang qua.html:", err);
+          }
+        }, 3400);
+      };
+
+      // TÍNH TOÁN VỊ TRÍ BAY CỦA ĐOÀN ẢNH VÀ MÁY BAY (TỶ LỆ CHO ẢNH TO HƠN)
+      const progressRatio = Math.min(1, currentTime / (duration || 1));
+      const currentPhoto = PHOTO_LIST[centerIndex] || PHOTO_LIST[0];
+
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      };
+
+      return (
+        <div className="relative w-screen h-screen overflow-hidden flex items-center justify-center bg-slate-950">
+
+          {/* VIEWPORT BẦU TRỜI CHUẨN CINEMA */}
+          <div className={`cinema-viewport sky-bg relative w-full h-full overflow-hidden flex flex-col justify-between ${appPhase === 'playing' ? 'cinema-viewport-shrunk' : ''}`}>
+            
+            {/* BACKGROUND ẢNH MỜ TƯƠNG ỨNG HÒA TRỘN VỚI NỀN TRỜI */}
+            <div 
+              className="bg-blur-photo absolute inset-0 pointer-events-none z-0 bg-cover bg-center filter blur-3xl scale-110 opacity-25 mix-blend-overlay"
+              style={{
+                backgroundImage: `url('${currentPhoto.imgSrc}'), url('${currentPhoto.fallbackSrc}')`
+              }}
+            ></div>
+
+            {/* MẶT TRỜI TỎA NẮNG DỊU DÀNG */}
+            <div className="fixed -top-20 -left-20 w-80 h-80 rounded-full bg-gradient-to-br from-amber-200/80 via-yellow-100/40 to-transparent blur-3xl pointer-events-none z-0"></div>
+
+            {/* CÁC ĐÁM MÂY TỰ NHIÊN TRÔI NỀN */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+              <svg className="cloud-drift-1 absolute top-[12%] text-white/70 filter drop-shadow-sm w-44 h-24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+              </svg>
+              <svg className="cloud-drift-2 absolute top-[38%] text-white/50 filter drop-shadow-sm w-64 h-36" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+              </svg>
+              <svg className="cloud-drift-3 absolute bottom-[22%] text-white/60 filter drop-shadow-sm w-52 h-28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+              </svg>
+            </div>
+
+            {/* THÔNG BÁO NHẸ TRONG 2S ĐẦU CHỜ CẤT CÁNH TỰ ĐỘNG */}
+            {appPhase === 'waiting_auto' && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+                <div className="bg-white/90 backdrop-blur-xl px-6 py-3 rounded-full border-2 border-pink-200 shadow-[0_15px_35px_rgba(244,63,94,0.25)] flex items-center gap-2.5 animate-pulse">
+                  <span className="text-xl"></span>
+                  <span className="text-sm font-black text-rose-600 tracking-wide">
+                    Chuyến bay kỷ niệm chúng ta chuẩn bị cất cánh...
+                  </span>
+                  <span className="text-base"></span>
+                </div>
+              </div>
+            )}
+
+            {/* ĐOÀN ẢNH VÀ MÁY BAY CHIBI BAY TỪ TRÁI SANG PHẢI */}
+            {appPhase === 'playing' && (
+              <div className="relative w-full flex-1 flex items-center overflow-hidden z-20">
+                <div 
+                  ref={photoTrackRef}
+                  className="smooth-track-container flex items-center"
+                >
+                  {/* Đoàn 51 bức ảnh khổ to nối tiếp nhau */}
+                  <div className="flex items-center gap-4 sm:gap-5 pr-4 sm:pr-5">
+                    {PHOTO_LIST.map((photo) => (
+                      <PolaroidCard key={photo.id} photo={photo} />
+                    ))}
+                  </div>
+
+                  {/* Chiếc máy bay Chibi Panda dẫn đầu */}
+                  <CuteLeaderPlane />
+                </div>
+              </div>
+            )}
+
+            {/* SAU KHI HẾT NHẠC: CHIẾC MÁY BAY BAY NGANG QUA VÀ CHUYỂN QUA.HTML */}
+            {appPhase === 'plane_fly_final' && (
+              <div className="animate-plane-final-fly fixed top-0 left-0 pointer-events-none z-50">
+                <PlaneFlyAcross />
+              </div>
+            )}
+
+            {/* THANH TIMELINE SPOTIFY CAO CẤP Ở ĐÁY MÀN HÌNH */}
+            <div className={`relative z-30 w-full px-3 sm:px-6 pb-3 sm:pb-5 transition-all duration-700 ${appPhase === 'playing' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12 pointer-events-none'}`}>
+              <div className="w-full max-w-4xl mx-auto bg-slate-900/85 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 sm:gap-6 text-white">
+                
+                {/* 1. THÔNG TIN BÀI HÁT & ĐĨA THAN DỄ THƯƠNG (BÊN TRÁI) */}
+                <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 max-w-[150px] sm:max-w-[240px]">
+                  {/* Đĩa nhạc xoay tròn dễ thương */}
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+                    <div className={`w-full h-full rounded-full bg-gradient-to-tr from-pink-400 via-rose-400 to-pink-300 p-1 shadow-md border border-white/30 flex items-center justify-center ${isPlaying ? 'animate-vinyl-spin' : ''}`}>
+                      <div className="w-4 h-4 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center">
+                        <span className="text-[8px]">🐼</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tên bài hát & Tác giả */}
+                  <div className="truncate">
+                    <div className="text-xs sm:text-sm font-black text-white truncate">
+                      {DEFAULT_TRACK.name}
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-pink-300 font-semibold truncate">
+                      {DEFAULT_TRACK.artist}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. ĐIỀU KHIỂN & THANH TIẾN TRÌNH SPOTIFY (Ở GIỮA) */}
+                <div className="flex-1 flex flex-col items-center max-w-md">
+                  
+                  {/* Các nút Play / Pause / Tua */}
+                  <div className="flex items-center gap-3 sm:gap-5 mb-1.5">
+                    {/* Nút lùi 10s */}
+                    <button 
+                      onClick={() => {
+                        const targetTime = Math.max(0, currentTime - 10);
+                        setCurrentTime(targetTime);
+                        if (audioRef.current) audioRef.current.currentTime = targetTime;
+                      }}
+                      className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+                      title="Lùi 10 giây"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.2 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+                      </svg>
+                    </button>
+
+                    {/* Nút Play / Pause tròn lớn */}
+                    <button 
+                      onClick={handleTogglePlay}
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white text-slate-900 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-md cursor-pointer"
+                    >
+                      {isPlaying ? (
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="6" y="4" width="4" height="16" rx="1"/>
+                          <rect x="14" y="4" width="4" height="16" rx="1"/>
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                      )}
+                    </button>
+
+                    {/* Nút tới 10s */}
+                    <button 
+                      onClick={() => {
+                        const targetTime = Math.min(duration, currentTime + 10);
+                        setCurrentTime(targetTime);
+                        if (audioRef.current) audioRef.current.currentTime = targetTime;
+                      }}
+                      className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+                      title="Tới 10 giây"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.5 8c2.65 0 5.05.99 6.9 2.6L22 7v9h-9l3.62-3.62c-1.39-1.2-3.16-1.88-5.12-1.88-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Thanh Seekbar với Gấu Panda chạy theo */}
+                  <div className="w-full flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono w-7 text-right">
+                      {formatTime(currentTime)}
+                    </span>
+
+                    {/* Slider bọc ngoài */}
+                    <div className="relative flex-1 flex items-center">
+                      {/* Chú gấu Panda mini chạy theo tiến trình nhạc */}
+                      <div 
+                        className="absolute -top-5 pointer-events-none transition-all duration-100 flex flex-col items-center"
+                        style={{
+                          left: `${progressRatio * 100}%`,
+                          transform: 'translateX(-50%)'
+                        }}
+                      >
+                        <span className={`text-base sm:text-lg ${isPlaying ? 'animate-mini-panda' : ''}`}>
+                          🐼
+                        </span>
+                      </div>
+
+                      <input 
+                        type="range"
+                        min="0"
+                        max={duration}
+                        step="0.1"
+                        value={currentTime}
+                        onChange={(e) => {
+                          const newTime = parseFloat(e.target.value);
+                          setCurrentTime(newTime);
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = newTime;
+                          }
+                        }}
+                        className="spotify-slider w-full bg-slate-700 hover:bg-slate-600 transition-colors"
+                        style={{
+                          background: `linear-gradient(to right, #38bdf8 ${progressRatio * 100}%, #334155 ${progressRatio * 100}%)`
+                        }}
+                      />
+                    </div>
+
+                    <span className="text-[10px] text-slate-400 font-mono w-7 text-left">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
+
+                </div>
+
+                {/* 3. ÂM LƯỢNG (BÊN PHẢI) */}
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button 
+                    onClick={() => setIsMuted(!isMuted)}
+                    className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+                  >
+                    {isMuted || volume === 0 ? (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
+                        <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                      </svg>
+                    )}
+                  </button>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setVolume(v);
+                      setIsMuted(false);
+                    }}
+                    className="spotify-slider w-14 sm:w-20 hidden md:block"
+                    style={{
+                      background: `linear-gradient(to right, #ffffff ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) ${(isMuted ? 0 : volume) * 100}%)`
+                    }}
+                  />
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<MVPage />);
+  </script>
+</body>
+</html>

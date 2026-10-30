@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vòng Quay May Mắn - Món Quà Sinh Nhật 20 Tuổi</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React 18 & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts Chuẩn tiếng Việt 100% -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+
+    .font-heading {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Bầu trời chuẩn màu đồng bộ các trang trước */
+    .sky-bg {
+      background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 35%, #bae6fd 70%, #f0f9ff 100%);
+    }
+
+    /* Mây trôi nền */
+    @keyframes cloudDrift {
+      0% { transform: translateX(-25vw); }
+      100% { transform: translateX(125vw); }
+    }
+    .cloud-drift-1 { animation: cloudDrift 55s linear infinite; }
+    .cloud-drift-2 { animation: cloudDrift 75s linear infinite 10s; }
+    .cloud-drift-3 { animation: cloudDrift 45s linear infinite 4s; }
+
+    /* Panda mang vòng quay bước đi */
+    @keyframes pandaWaddleWalk {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+    .animate-panda-walk {
+      animation: pandaWaddleWalk 0.5s ease-in-out infinite;
+    }
+
+    /* Đèn nháy quanh viền vòng quay */
+    @keyframes wheelBulbBlink {
+      0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px #facc15); }
+      50% { opacity: 0.35; transform: scale(0.85); filter: none; }
+    }
+    .wheel-bulb {
+      animation: wheelBulbBlink 0.9s ease-in-out infinite alternate;
+    }
+
+    /* Kim chỉ nhảy giật nhẹ lúc quay */
+    @keyframes pointerWobble {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-12deg); }
+    }
+    .animate-pointer-spin {
+      animation: pointerWobble 0.12s linear infinite;
+    }
+
+    /* Xuất hiện bảng trúng thưởng */
+    @keyframes modalPopUp {
+      0% { transform: scale(0.4) translateY(40px); opacity: 0; }
+      70% { transform: scale(1.05) translateY(-5px); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .animate-modal-pop {
+      animation: modalPopUp 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* Nút món quà đặc biệt nhấp nháy tim */
+    @keyframes buttonHeartbeat {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(244,63,94,0.45); }
+      50% { transform: scale(1.04); box-shadow: 0 18px 45px rgba(244,63,94,0.7); }
+    }
+    .animate-pulse-special-btn {
+      animation: buttonHeartbeat 1.6s ease-in-out infinite;
+    }
+
+    /* Hiệu ứng xoay đồng hồ nhẹ nhàng */
+    @keyframes watchGlowSpin {
+      0%, 100% { transform: rotate(-3deg) scale(1); }
+      50% { transform: rotate(3deg) scale(1.03); }
+    }
+    .animate-watch-glow {
+      animation: watchGlowSpin 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="sky-bg w-screen h-screen overflow-hidden flex items-center justify-center relative">
+
+  <div id="root" class="w-full h-full"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ==========================================
+    // CÁC MÓN QUÀ (TẤT CẢ X2 SỐ LƯỢNG = 12 Ô)
+    // Ô ĐỒNG HỒ Ở VỊ TRÍ INDEX = 2 (hoặc 8)
+    // ==========================================
+    const WHEEL_ITEMS = [
+      { id: 0, name: 'Bó Hoa', icon: '💐', color: '#fbcfe8', textColor: '#be185d' },
+      { id: 1, name: 'Bánh Kem', icon: '🎂', color: '#fed7aa', textColor: '#c2410c' },
+      { id: 2, name: 'Đồng Hồ', icon: '⌚', color: '#bae6fd', textColor: '#0369a1', isTarget: true }, // MỤC TIÊU MẶC ĐỊNH
+      { id: 3, name: 'Biệt Thự', icon: '🏡', color: '#bbf7d0', textColor: '#15803d' },
+      { id: 4, name: 'Siêu Xe', icon: '🚗', color: '#fef08a', textColor: '#a16207' },
+      { id: 5, name: 'iPhone', icon: '📱', color: '#e9d5ff', textColor: '#7e22ce' },
+      
+      // X2 SỐ LƯỢNG:
+      { id: 6, name: 'Bó Hoa', icon: '💐', color: '#fbcfe8', textColor: '#be185d' },
+      { id: 7, name: 'Bánh Kem', icon: '🎂', color: '#fed7aa', textColor: '#c2410c' },
+      { id: 8, name: 'Đồng Hồ', icon: '⌚', color: '#bae6fd', textColor: '#0369a1' },
+      { id: 9, name: 'Biệt Thự', icon: '🏡', color: '#bbf7d0', textColor: '#15803d' },
+      { id: 10, name: 'Siêu Xe', icon: '🚗', color: '#fef08a', textColor: '#a16207' },
+      { id: 11, name: 'iPhone', icon: '📱', color: '#e9d5ff', textColor: '#7e22ce' }
+    ];
+
+    const TOTAL_SEGMENTS = WHEEL_ITEMS.length; // 12
+    const SEGMENT_ANGLE = 360 / TOTAL_SEGMENTS; // 30 độ mỗi ô
+
+    // ==========================================
+    // COMPONENT: GẤU TRÚC PANDA ĐỨNG CẠNH VÒNG QUAY
+    // ==========================================
+    const PandaHost = ({ isCheering }) => (
+      <div className="relative select-none filter drop-shadow-[0_12px_28px_rgba(14,116,144,0.25)] flex flex-col items-center">
+        <svg className={`w-32 h-32 sm:w-44 sm:h-44 md:w-52 md:h-52 ${isCheering ? 'animate-bounce' : ''}`} viewBox="0 0 240 240" fill="none">
+          <circle cx="120" cy="120" r="92" fill="#fdf2f8" opacity="0.65" />
+          
+          {/* Tai Panda */}
+          <circle cx="65" cy="55" r="26" fill="#18181b" />
+          <circle cx="67" cy="57" r="14" fill="#27272a" />
+          <circle cx="175" cy="55" r="26" fill="#18181b" />
+          <circle cx="173" cy="57" r="14" fill="#27272a" />
+
+          {/* Đầu tròn trắng */}
+          <ellipse cx="120" cy="98" rx="64" ry="54" fill="#ffffff" stroke="#f1f5f9" strokeWidth="2.5" />
+
+          {/* Mắt Panda quầng đen */}
+          <ellipse cx="92" cy="95" rx="19" ry="16" fill="#18181b" transform="rotate(-16 92 95)" />
+          <ellipse cx="148" cy="95" rx="19" ry="16" fill="#18181b" transform="rotate(16 148 95)" />
+
+          {/* Tròng mắt long lanh */}
+          <circle cx="94" cy="93" r="8" fill="#ffffff" />
+          <circle cx="96" cy="92" r="4.2" fill="#09090b" />
+          <circle cx="93" cy="95" r="2.2" fill="#ffffff" />
+
+          <circle cx="146" cy="93" r="8" fill="#ffffff" />
+          <circle cx="144" cy="92" r="4.2" fill="#09090b" />
+          <circle cx="147" cy="95" r="2.2" fill="#ffffff" />
+
+          {/* Mũi & miệng cười tươi */}
+          <ellipse cx="120" cy="108" rx="7" ry="5" fill="#18181b" />
+          <path d="M112 116 Q120 126 128 116" stroke="#18181b" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+          {/* Hai má hồng phấn */}
+          <circle cx="78" cy="110" r="10" fill="#fb7185" opacity="0.75" />
+          <circle cx="162" cy="110" r="10" fill="#fb7185" opacity="0.75" />
+
+          {/* Vương miện vàng 20 tuổi */}
+          <polygon points="98,42 106,22 120,35 134,22 142,42" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
+          <circle cx="106" cy="21" r="3" fill="#ef4444" />
+          <circle cx="120" cy="34" r="3.5" fill="#38bdf8" />
+          <circle cx="134" cy="21" r="3" fill="#ec4899" />
+
+          {/* Thân mình */}
+          <ellipse cx="120" cy="172" rx="55" ry="45" fill="#ffffff" stroke="#e2e8f0" strokeWidth="2" />
+
+          {/* Chân */}
+          <ellipse cx="88" cy="215" rx="20" ry="14" fill="#18181b" />
+          <ellipse cx="152" cy="215" rx="20" ry="14" fill="#18181b" />
+
+          {/* Tay giơ lên cổ vũ hoặc chỉ về vòng quay */}
+          {isCheering ? (
+            <g>
+              <ellipse cx="48" cy="130" rx="16" ry="24" fill="#18181b" transform="rotate(-40 48 130)" />
+              <ellipse cx="192" cy="130" rx="16" ry="24" fill="#18181b" transform="rotate(40 192 130)" />
+            </g>
+          ) : (
+            <g>
+              <ellipse cx="58" cy="160" rx="16" ry="24" fill="#18181b" transform="rotate(25 58 160)" />
+              <ellipse cx="182" cy="150" rx="16" ry="24" fill="#18181b" transform="rotate(-45 182 150)" />
+            </g>
+          )}
+        </svg>
+      </div>
+    );
+
+    // ==========================================
+    // COMPONENT: VÒNG QUAY MAY MẮN 12 PHẦN THƯỞNG
+    // ==========================================
+    const LuckyWheel = ({ rotation, isSpinning, onSpin, hasSpun }) => {
+      // Bán kính đĩa quay rộng rãi để chữ không bị chật
+      const radius = 195;
+      const center = 220;
+
+      // Tạo các hình nan quạt SVG cho 12 ô
+      const renderSegments = () => {
+        return WHEEL_ITEMS.map((item, index) => {
+          const startAngle = (index * SEGMENT_ANGLE - 90) * (Math.PI / 180);
+          const endAngle = ((index + 1) * SEGMENT_ANGLE - 90) * (Math.PI / 180);
+
+          const x1 = center + radius * Math.cos(startAngle);
+          const y1 = center + radius * Math.sin(startAngle);
+          const x2 = center + radius * Math.cos(endAngle);
+          const y2 = center + radius * Math.sin(endAngle);
+
+          const pathData = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
+
+          // Góc trục chính giữa của nan quạt
+          const midAngleDeg = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
+
+          return (
+            <g key={item.id}>
+              <path d={pathData} fill={item.color} stroke="#ffffff" strokeWidth="2.5" />
+              {/* Xoay theo hướng nan quạt, xoay chữ 90 độ dọc để chữ nằm dọc theo bán kính, cực kỳ rộng rãi */}
+              <g transform={`rotate(${midAngleDeg} ${center} ${center})`}>
+                <text 
+                  x={center} 
+                  y={center - 120} 
+                  textAnchor="middle" 
+                  dominantBaseline="central"
+                  transform={`rotate(90, ${center}, ${center - 120})`}
+                  fontSize="15" 
+                  fill={item.textColor}
+                  fontWeight="900"
+                  letterSpacing="1.2px"
+                  style={{ textShadow: '0 1px 2px rgba(255,255,255,0.85)' }}
+                >
+                  {item.name}
+                </text>
+              </g>
+            </g>
+          );
+        });
+      };
+
+      // Đèn bóng sáng quanh viền
+      const renderBulbs = () => {
+        return [...Array(24)].map((_, i) => {
+          const angle = (i * 15) * (Math.PI / 180);
+          const bx = center + (radius + 14) * Math.cos(angle);
+          const by = center + (radius + 14) * Math.sin(angle);
+          return (
+            <circle 
+              key={i} 
+              cx={bx} 
+              cy={by} 
+              r="4.8" 
+              fill={i % 2 === 0 ? '#fef08a' : '#ffffff'} 
+              className="wheel-bulb"
+              style={{ animationDelay: `${(i % 4) * 0.22}s` }}
+            />
+          );
+        });
+      };
+
+      return (
+        <div className="relative flex flex-col items-center justify-center select-none">
+          
+          {/* HÀO QUANG ÁNH SÁNG VÀNG PHÍA SAU */}
+          <div className="absolute -inset-6 rounded-full bg-gradient-to-tr from-amber-300/40 via-pink-300/40 to-sky-300/40 blur-2xl pointer-events-none"></div>
+
+          {/* KIM CHỈ VÒNG QUAY Ở ĐỈNH (HƯỚNG 12 GIỜ) */}
+          <div className="absolute -top-7 z-30 flex flex-col items-center">
+            <svg className={`w-11 h-14 filter drop-shadow-[0_6px_10px_rgba(225,29,72,0.45)] ${isSpinning ? 'animate-pointer-spin' : ''}`} viewBox="0 0 40 50">
+              <path d="M20 50 L5 12 C3 5 10 0 20 0 C30 0 37 5 35 12 Z" fill="#e11d48" stroke="#ffffff" strokeWidth="2.5" />
+              <circle cx="20" cy="14" r="6" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.5" />
+            </svg>
+          </div>
+
+          {/* VỎ NGOÀI VÒNG QUAY - TĂNG KÍCH THƯỚC ĐỂ TO RÕ VÀ THOÁNG */}
+          <div className="relative w-[370px] h-[370px] sm:w-[440px] sm:h-[440px] rounded-full p-2.5 bg-gradient-to-tr from-rose-500 via-pink-400 to-rose-500 shadow-[0_20px_50px_rgba(244,63,94,0.35)] border-4 border-white flex items-center justify-center">
+            
+            {/* ĐĨA QUAY THỰC TẾ XOAY BẰNG CSS TRANSFORM */}
+            <svg 
+              className="w-full h-full rounded-full" 
+              viewBox="0 0 440 440"
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transition: isSpinning ? 'transform 5.2s cubic-bezier(0.16, 0.85, 0.25, 1)' : 'none',
+                willChange: 'transform'
+              }}
+            >
+              {/* Vành viền đính bóng đèn */}
+              <circle cx={center} cy={center} r={radius + 18} fill="#be123c" />
+              {renderBulbs()}
+
+              {/* Các nan quạt 12 món quà */}
+              {renderSegments()}
+
+              {/* Vòng kim loại giữa */}
+              <circle cx={center} cy={center} r="42" fill="#ffffff" stroke="#f43f5e" strokeWidth="4" />
+            </svg>
+
+            {/* NÚT "QUAY" Ở TÂM VÒNG QUAY */}
+            <button
+              onClick={onSpin}
+              disabled={isSpinning || hasSpun}
+              className={`absolute z-20 w-22 h-22 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 text-white font-black text-base sm:text-lg shadow-[0_8px_25px_rgba(225,29,72,0.6)] border-3 border-white flex flex-col items-center justify-center transition-all ${
+                !isSpinning && !hasSpun ? 'hover:scale-110 active:scale-95 animate-pulse cursor-pointer' : 'cursor-default'
+              }`}
+            >
+              <span className="leading-tight mt-1 font-black tracking-widest text-sm sm:text-base">QUAY</span>
+            </button>
+
+          </div>
+
+          {/* CHÂN ĐẾ GỖ VÒNG QUAY */}
+          <div className="-mt-5 z-0 flex flex-col items-center pointer-events-none">
+            <svg className="w-36 h-14" viewBox="0 0 140 60">
+              <polygon points="45,0 95,0 115,50 25,50" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="2" />
+              <rect x="15" y="48" width="110" height="12" rx="6" fill="#64748b" />
+            </svg>
+          </div>
+
+        </div>
+      );
+    };
+
+    // ==========================================
+    // TRANG CHÍNH: QUA.HTML
+    // ==========================================
+    function LuckyGiftPage() {
+      // appStage:
+      // 'walking_in' : Panda mang vòng quay đi từ trái vào giữa (2.5s)
+      // 'ready_spin' : Dừng ở giữa, mời ấn quay
+      // 'spinning'   : Đang quay 5.2s, mặc định dừng chính xác ở ô Đồng Hồ
+      // 'celebrating': Bảng chúc mừng trúng Đồng hồ (hiển thị ảnh đồng hồ Casio)
+      // 'ready_qr'   : Sau đúng 5s, nút "Món quà đặc biệt" xuất hiện
+      const [appStage, setAppStage] = useState('walking_in');
+      const [pandaPos, setPandaPos] = useState(-30);
+      const [rotation, setRotation] = useState(0);
+      const [showQrModal, setShowQrModal] = useState(false);
+      const [countdown5s, setCountdown5s] = useState(5);
+
+      // 1. PANDA MANG VÒNG QUAY ĐI TỪ TRÁI VÀO CHÍNH GIỮA (2.5S)
+      useEffect(() => {
+        const startX = -30;
+        const targetX = 50; // Chính giữa
+        const duration = 2400;
+        const interval = 25;
+        const steps = duration / interval;
+        let currentStep = 0;
+
+        const walkTimer = setInterval(() => {
+          currentStep++;
+          const progress = Math.min(1, currentStep / steps);
+          // Ease-out mượt mà
+          const currentX = startX + (targetX - startX) * Math.sin((progress * Math.PI) / 2);
+          setPandaPos(currentX);
+
+          if (currentStep >= steps) {
+            clearInterval(walkTimer);
+            setAppStage('ready_spin');
+          }
+        }, interval);
+
+        return () => clearInterval(walkTimer);
+      }, []);
+
+      // 2. HÀM XỬ LÝ QUAY VÒNG QUAY: MẶC ĐỊNH DỪNG VÀO Ô ĐỒNG HỒ
+      const handleSpinWheel = () => {
+        if (appStage !== 'ready_spin') return;
+
+        setAppStage('spinning');
+
+        // Ô Đồng hồ có index = 2.
+        // Kim chỉ ở đỉnh 12h (270 độ / -90 độ).
+        // Nan quạt thứ index=2 có góc từ [2*30, 3*30] = [60, 90] độ, trung tâm là 75 độ.
+        // Để ô thứ 2 nằm ngay dưới kim 12h: rotation cần là: 360 - 75 = 285 độ (hoặc 360*k + 285).
+        const targetAngle = 285;
+        const fullSpins = 8 * 360; // Quay 8 vòng hoàn chỉnh cho hồi hộp
+        const finalRotation = fullSpins + targetAngle;
+
+        setRotation(finalRotation);
+
+        // Sau 5.2s khi vòng quay vừa dừng hẳn
+        setTimeout(() => {
+          setAppStage('celebrating');
+
+          // Pháo hoa tưng bừng chúc mừng trúng đồng hồ
+          confetti({
+            particleCount: 220,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: ['#38bdf8', '#f43f5e', '#fbbf24', '#ffffff']
+          });
+
+          // ĐẾM NGƯỢC ĐÚNG 5S MỚI HIỂN THỊ NÚT MÓN QUÀ ĐẶC BIỆT
+          let timeLeft = 5;
+          const timer5s = setInterval(() => {
+            timeLeft -= 1;
+            setCountdown5s(timeLeft);
+
+            if (timeLeft <= 0) {
+              clearInterval(timer5s);
+              setAppStage('ready_qr');
+
+              confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.7 },
+                colors: ['#ec4899', '#f43f5e', '#facc15']
+              });
+            }
+          }, 1000);
+
+        }, 5300);
+      };
+
+      // 3. MỞ BẢNG CHỨA MÃ QR ĐỂ QUÉT
+      const handleOpenQrModal = () => {
+        setShowQrModal(true);
+        confetti({
+          particleCount: 100,
+          spread: 60,
+          origin: { y: 0.5 },
+          colors: ['#f43f5e', '#38bdf8', '#fef08a']
+        });
+      };
+
+      return (
+        <div className="sky-bg relative w-screen h-screen overflow-hidden flex flex-col justify-between items-center p-3 sm:p-5 select-none">
+          
+          {/* MẶT TRỜI TỎA NẮNG DỊU DÀNG (ĐỒNG BỘ 100% CÁC TRANG TRƯỚC) */}
+          <div className="fixed -top-20 -left-20 w-80 h-80 rounded-full bg-gradient-to-br from-amber-200/80 via-yellow-100/40 to-transparent blur-3xl pointer-events-none z-0"></div>
+
+          {/* MÂY TRÔI NỀN */}
+          <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+            <svg className="cloud-drift-1 absolute top-[10%] text-white/70 filter drop-shadow-sm w-44 h-24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+            <svg className="cloud-drift-2 absolute top-[36%] text-white/50 filter drop-shadow-sm w-64 h-36" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+            <svg className="cloud-drift-3 absolute bottom-[15%] text-white/60 filter drop-shadow-sm w-52 h-28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+          </div>
+
+          {/* TIÊU ĐỀ PHÍA TRÊN */}
+          <div className="relative z-20 text-center mt-2 sm:mt-4 transition-all duration-700">
+            <span className="inline-block bg-white/85 backdrop-blur-md text-rose-600 font-black text-[11px] sm:text-xs px-4 py-1 rounded-full border border-pink-200 shadow-sm uppercase tracking-widest mb-1">
+              Vòng Quay May Mắn
+            </span>
+          </div>
+
+          {/* KHU VỰC TRUNG TÂM: GẤU PANDA & VÒNG QUAY MAY MẮN */}
+          <div className="relative z-20 flex-1 w-full max-w-4xl flex items-center justify-center my-auto">
+            
+            {/* CONTAINER CHUYỂN ĐỘNG CỦA PANDA VÀ VÒNG QUAY */}
+            <div 
+              className="flex items-center justify-center gap-3 sm:gap-6 transition-all duration-100"
+              style={{
+                position: appStage === 'walking_in' ? 'absolute' : 'relative',
+                left: appStage === 'walking_in' ? `${pandaPos}%` : 'auto',
+                transform: appStage === 'walking_in' ? 'translateX(-50%)' : 'none'
+              }}
+            >
+              {/* Chú gấu Panda */}
+              <div className={appStage === 'walking_in' ? 'animate-panda-walk' : ''}>
+                <PandaHost isCheering={appStage === 'celebrating' || appStage === 'ready_qr'} />
+              </div>
+
+              {/* Vòng quay may mắn */}
+              <LuckyWheel 
+                rotation={rotation}
+                isSpinning={appStage === 'spinning'}
+                onSpin={handleSpinWheel}
+                hasSpun={appStage === 'celebrating' || appStage === 'ready_qr'}
+              />
+            </div>
+
+          </div>
+
+          {/* ============================================================ */}
+          {/* BẢNG CHÚC MỪNG QUAY TRÚNG ĐỒNG HỒ (POPOP SAU KHI DỪNG) */}
+          {/* ============================================================ */}
+          {(appStage === 'celebrating' || appStage === 'ready_qr') && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-modal-pop">
+              <div className="relative w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 shadow-[0_25px_60px_rgba(244,63,94,0.4)] border-4 border-pink-300 text-center flex flex-col items-center">
+                
+                {/* Vương miện & icon chúc mừng */}
+                <div className="w-16 h-16 -mt-12 rounded-full bg-gradient-to-tr from-rose-500 to-amber-400 border-4 border-white shadow-lg flex items-center justify-center text-3xl animate-bounce">
+                
+                </div>
+
+                <span className="bg-rose-100 text-rose-600 font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider mt-3">
+                Kết Quả Vòng Quay
+                </span>
+
+
+                <p className="text-sm sm:text-base font-extrabold text-rose-600 mt-1">
+                  Em đã quay trúng: Đồng Hồ Casio
+                </p>
+
+                {/* HÌNH ẢNH MINH HỌA ĐỒNG HỒ NỮ CASIO MẶT HỒNG */}
+                <div className="my-4 relative w-48 h-48 bg-gradient-to-b from-sky-50 via-pink-50 to-white rounded-2xl border-2 border-pink-200 shadow-inner flex items-center justify-center overflow-hidden animate-watch-glow">
+                  {/* Bụi sao lấp lánh */}
+                  <span className="absolute top-2 left-3 text-lg animate-pulse"></span>
+                  <span className="absolute bottom-2 right-3 text-lg animate-pulse"></span>
+
+                  {/* Đồng hồ Casio mặt hồng */}
+                  <svg className="w-40 h-44 filter drop-shadow-md" viewBox="0 0 200 240" fill="none">
+                    <defs>
+                      <linearGradient id="silverBand" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#cbd5e1" />
+                        <stop offset="50%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#94a3b8" />
+                      </linearGradient>
+                      <radialGradient id="pinkDial" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#fff1f2" />
+                        <stop offset="70%" stopColor="#fce7f3" />
+                        <stop offset="100%" stopColor="#fbcfe8" />
+                      </radialGradient>
+                    </defs>
+
+                    {/* Dây kim loại trên & dưới */}
+                    <path d="M75 10 L80 60 L120 60 L125 10 Z" fill="url(#silverBand)" stroke="#94a3b8" strokeWidth="1.5" />
+                    <line x1="77" y1="28" x2="123" y2="28" stroke="#64748b" strokeWidth="1.5" />
+                    <line x1="79" y1="45" x2="121" y2="45" stroke="#64748b" strokeWidth="1.5" />
+
+                    <path d="M80 160 L75 225 L125 225 L120 160 Z" fill="url(#silverBand)" stroke="#94a3b8" strokeWidth="1.5" />
+                    <line x1="78" y1="180" x2="122" y2="180" stroke="#64748b" strokeWidth="1.5" />
+                    <line x1="76" y1="202" x2="124" y2="202" stroke="#64748b" strokeWidth="1.5" />
+
+                    {/* Vỏ tròn & vành bezel */}
+                    <circle cx="100" cy="110" r="54" fill="url(#silverBand)" stroke="#94a3b8" strokeWidth="2.5" />
+                    <circle cx="100" cy="110" r="48" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                    {/* Núm vặn 3h */}
+                    <rect x="153" y="105" width="8" height="10" rx="1.5" fill="url(#silverBand)" stroke="#64748b" strokeWidth="1" />
+
+                    {/* Mặt hồng Casio */}
+                    <circle cx="100" cy="110" r="42" fill="url(#pinkDial)" stroke="#f472b6" strokeWidth="1.2" />
+                    <text x="100" y="82" fontSize="9" fill="#0f172a" fontWeight="900" fontFamily="Playfair Display, serif" textAnchor="middle">XII</text>
+                    <text x="100" y="144" fontSize="9" fill="#0f172a" fontWeight="900" fontFamily="Playfair Display, serif" textAnchor="middle">VI</text>
+                    <text x="100" y="94" fontSize="7" fill="#0f172a" fontWeight="900" textAnchor="middle">CASIO</text>
+                    <text x="100" y="130" fontSize="4.5" fill="#475569" fontWeight="bold" textAnchor="middle">WATER RESIST</text>
+
+                    {/* Kim */}
+                    <line x1="100" y1="110" x2="88" y2="100" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="100" y1="110" x2="120" y2="88" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="100" y1="110" x2="108" y2="135" stroke="#f43f5e" strokeWidth="1" strokeLinecap="round" />
+                    <circle cx="100" cy="110" r="2.5" fill="#475569" />
+                  </svg>
+                </div>
+
+                <p className="text-xs text-slate-600 px-4">
+                  “Thời gian có thể trôi, nhưng từng giây từng phút anh đều muốn đồng hành cùng em!”
+                </p>
+
+                {/* KHU VỰC NÚT MÓN QUÀ ĐẶC BIỆT HOẶC ĐẾM NGƯỢC 5S */}
+                <div className="mt-5 w-full flex items-center justify-center min-h-[52px]">
+                  {appStage === 'ready_qr' ? (
+                    <button
+                      onClick={handleOpenQrModal}
+                      className="animate-pulse-special-btn w-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 hover:from-rose-600 hover:to-pink-600 text-white font-black text-sm sm:text-base py-3.5 px-6 rounded-full shadow-[0_12px_28px_rgba(244,63,94,0.45)] flex items-center justify-center gap-2 cursor-pointer transition-transform transform active:scale-95"
+                    >
+                      <span>Quà đặc biệt</span>
+                      <span className="text-xl"></span>
+                    </button>
+                  ) : (
+                    <div className="bg-pink-50 text-rose-600 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full border border-pink-200 flex items-center gap-2">
+                      <span className="animate-spin text-base"></span>
+                      <span>Quà đặc biệt sẽ xuất hiện sau: <span className="font-black text-base">{countdown5s}s</span></span>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* BẢNG CHỨA MÃ QR ĐỂ QUÉT (KHI ẤN VÀO NÚT MÓN QUÀ ĐẶC BIỆT) */}
+          {/* ============================================================ */}
+          {showQrModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-modal-pop">
+              <div className="relative w-full max-w-sm bg-white rounded-3xl p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.5)] border-4 border-pink-300 text-center flex flex-col items-center">
+                
+                {/* Nút đóng góc phải */}
+                <button 
+                  onClick={() => setShowQrModal(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-xl font-black p-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+
+                {/* Huy hiệu bí mật */}
+                <div className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-600 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider mb-2">
+                  <span></span>
+                  <span>Quà Bí Mật Dành Cho Em</span>
+                </div>
+
+                <p className="text-xs text-slate-500 mb-4">
+                  Dùng camera điện thoại hoặc Zalo để quét và mở điều bất ngờ!
+                </p>
+
+                {/* KHUNG MÃ QR CHỪA SẴN ĐỂ ADD ẢNH (BẠN CHỈ CẦN THAY FILE qr.png) */}
+                <div className="relative p-3 bg-gradient-to-tr from-pink-100 via-rose-50 to-sky-100 rounded-2xl border-2 border-pink-300 shadow-md flex items-center justify-center">
+                  <img 
+                    src="qr.png" 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=https://den.html&color=e11d48&bgcolor=ffffff";
+                    }}
+                    alt="Mã QR Món Quà"
+                    className="w-52 h-52 sm:w-56 sm:h-56 rounded-xl object-contain bg-white p-2"
+                  />
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* DÒNG HƯỚNG DẪN DƯỚI ĐÁY */}
+          <div className="relative z-20 mb-2 sm:mb-4 text-center">
+            <span className="text-xs font-bold text-slate-600/90 bg-white/70 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/70 shadow-sm">
+              {appStage === 'walking_in' && 'Bé Panda đang đẩy vòng quay may mắn tới nè...'}
+              {appStage === 'ready_spin' && 'Em nhấn nút "QUAY" ở giữa vòng quay nhé!'}
+              {(appStage === 'celebrating' || appStage === 'ready_qr') && 'Chúc mừng em yêu với món quà tuyệt vời!'}
+            </span>
+          </div>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<LuckyGiftPage />);
+  </script>
+</body>
+</html>

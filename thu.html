@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bức Thư Bầu Trời - Anh Nẹo Gửi Em Mèo</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React 18 & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone để biên dịch JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Đảm bảo 100% hiển thị tiếng Việt hoàn hảo, không nhảy phông -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Mulish:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Mulish', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    /* Chữ ký tay lãng mạn chuẩn tiếng Việt không gãy dấu */
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+    
+    /* Font tiêu đề trang nhã, chắc chắn, chuẩn dấu */
+    .font-heading {
+      font-family: 'Merriweather', serif;
+    }
+
+    /* Font thân bài văn thư văn học ấm áp, mềm mại */
+    .font-letter-body {
+      font-family: 'Merriweather', serif;
+      letter-spacing: 0.01em;
+    }
+
+    /* Bầu trời xanh mây trắng đồng bộ index.html */
+    .sky-bg {
+      background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 35%, #bae6fd 70%, #f0f9ff 100%);
+    }
+
+    /* Mây trôi nền */
+    @keyframes cloudDrift {
+      0% { transform: translateX(-25vw); }
+      100% { transform: translateX(125vw); }
+    }
+    .cloud-drift-1 { animation: cloudDrift 55s linear infinite; }
+    .cloud-drift-2 { animation: cloudDrift 75s linear infinite 12s; }
+    .cloud-drift-3 { animation: cloudDrift 42s linear infinite 5s; }
+
+    /* HIỆU ỨNG LÁ THƯ HỒNG RƠI ĐÁP XUỐNG VÀ BUNG MỞ NGAY */
+    @keyframes pinkLetterAppear {
+      0% {
+        transform: translateY(-60vh) scale(0.6) rotate(-12deg);
+        opacity: 0;
+      }
+      70% {
+        transform: translateY(8px) scale(1.02) rotate(2deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+    .animate-pink-appear {
+      animation: pinkLetterAppear 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* HIỆU ỨNG BUNG MỞ TỪ TRÁI SANG PHẢI */
+    @keyframes letterUnrollFromLeft {
+      0% {
+        clip-path: inset(0 100% 0 0 round 24px);
+        transform: scaleX(0.08) translateY(0);
+        opacity: 0.3;
+      }
+      100% {
+        clip-path: inset(0 0 0 0 round 24px);
+        transform: scaleX(1) translateY(0);
+        opacity: 1;
+      }
+    }
+    .animate-unroll-letter {
+      animation: letterUnrollFromLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: left center;
+    }
+
+    /* HIỆU ỨNG CUỘN ĐÓNG THƯ LẠI KHI BẤM NÚT */
+    @keyframes letterRollBack {
+      0% {
+        clip-path: inset(0 0 0 0 round 24px);
+        transform: scale(1);
+        opacity: 1;
+      }
+      60% {
+        clip-path: inset(0 50% 0 50% round 24px);
+        transform: scale(0.65) translateY(-20px);
+        opacity: 0.9;
+      }
+      100% {
+        clip-path: inset(0 50% 0 50% round 24px);
+        transform: scale(0.2) translateY(-100px);
+        opacity: 0;
+      }
+    }
+    .animate-letter-pack-up {
+      animation: letterRollBack 1.3s cubic-bezier(0.55, 0, 0.1, 1) forwards;
+      transform-origin: center center;
+    }
+
+    /* CHUYẾN BAY MÁY BAY KÉO HÒM THƯ BAY THẲNG ĐẾN HANHTRINH20.HTML */
+    @keyframes planeTakeoffMail {
+      0% {
+        transform: translate(-45vw, 65vh) rotate(14deg) scale(0.7);
+        opacity: 0;
+      }
+      15% {
+        opacity: 1;
+      }
+      45% {
+        transform: translate(25vw, 32vh) rotate(2deg) scale(0.98);
+      }
+      75% {
+        transform: translate(68vw, 18vh) rotate(-4deg) scale(1.08);
+      }
+      100% {
+        transform: translate(145vw, -5vh) rotate(-8deg) scale(1.15);
+        opacity: 1;
+      }
+    }
+    .animate-plane-takeoff {
+      animation: planeTakeoffMail 3.4s cubic-bezier(0.35, 0, 0.2, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Cánh quạt quay */
+    @keyframes spinPropeller {
+      0% { transform: scaleY(1); opacity: 0.9; }
+      50% { transform: scaleY(0.12); opacity: 0.45; }
+      100% { transform: scaleY(1); opacity: 0.9; }
+    }
+    .propeller-spin {
+      animation: spinPropeller 0.08s linear infinite;
+      transform-origin: center;
+    }
+
+    /* Hòm thư lắc lư */
+    @keyframes mailboxSway {
+      0%, 100% { transform: rotate(-5deg) translateY(0px); }
+      50% { transform: rotate(7deg) translateY(-6px); }
+    }
+    .mailbox-sway {
+      animation: mailboxSway 1s ease-in-out infinite;
+      transform-origin: left center;
+    }
+
+    /* Custom thanh cuộn */
+    .letter-scroll-area::-webkit-scrollbar {
+      width: 5px;
+    }
+    .letter-scroll-area::-webkit-scrollbar-track {
+      background: rgba(254, 205, 211, 0.3);
+      border-radius: 10px;
+    }
+    .letter-scroll-area::-webkit-scrollbar-thumb {
+      background: #f472b6;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="sky-bg min-h-screen w-screen relative overflow-x-hidden flex items-center justify-center p-3 sm:p-6">
+
+  <div id="root" class="w-full h-full flex items-center justify-center"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // COMPONENT MÁY BAY CHIBI PANDA KÉO HÒM THƯ
+    const CutePlaneTakeoff = () => (
+      <div className="relative flex items-center select-none filter drop-shadow-[0_15px_30px_rgba(14,116,144,0.3)]">
+        {/* Hòm thư được kéo */}
+        <div className="flex items-center mr-[-4px] z-10">
+          <div className="mailbox-sway flex items-center bg-white/95 backdrop-blur-md p-3.5 rounded-3xl shadow-[0_16px_35px_rgba(244,63,94,0.35)] border-3 border-pink-300">
+            <div className="relative w-12 h-12 bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 rounded-2xl flex items-center justify-center text-white shadow-inner mr-3">
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <rect width="20" height="16" x="2" y="4" rx="3" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              <span className="absolute -top-2 -right-1 text-base animate-bounce">💌</span>
+            </div>
+            <div className="pr-2 text-left">
+              <div className="flex items-center gap-1.5">
+                <span className="bg-rose-100 text-rose-600 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                  Chuyến Bay Kỷ Niệm
+                </span>
+              </div>
+              <div className="text-sm font-black text-slate-800 tracking-tight whitespace-nowrap mt-0.5">
+                Đi đến hành trình 20 năm 🚀
+              </div>
+            </div>
+          </div>
+
+          <svg className="w-16 h-8 -ml-1 text-pink-400" viewBox="0 0 60 20">
+            <path d="M0,10 Q30,18 60,10" fill="none" stroke="#f472b6" strokeWidth="3" strokeDasharray="5 3" />
+          </svg>
+        </div>
+
+        {/* Máy bay Chibi Panda */}
+        <svg className="w-48 h-36 md:w-56 md:h-40 transform relative z-20" viewBox="0 0 280 200" fill="none">
+          <defs>
+            <linearGradient id="bodyGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="45%" stopColor="#fdf4ff" />
+              <stop offset="100%" stopColor="#fbcfe8" />
+            </linearGradient>
+            <linearGradient id="wingGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#0284c7" />
+            </linearGradient>
+            <linearGradient id="glassGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#bae6fd" />
+              <stop offset="60%" stopColor="#7dd3fc" />
+              <stop offset="100%" stopColor="#38bdf8" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="65" cy="85" rx="30" ry="12" fill="#0284c7" transform="rotate(-18 65 85)" />
+          <path d="M35 110 C25 65, 45 40, 68 50 C75 75, 70 95, 60 115 Z" fill="#f43f5e" stroke="#e11d48" strokeWidth="2.5" />
+          <circle cx="53" cy="65" r="5" fill="#ffffff" />
+          <path d="M40 120 C40 85, 80 60, 160 62 C230 64, 255 95, 255 122 C255 152, 215 168, 140 166 C70 164, 40 145, 40 120 Z" 
+                fill="url(#bodyGrad2)" stroke="#f472b6" strokeWidth="3.5" />
+          <path d="M60 135 C95 160, 180 160, 240 130 C220 158, 160 166, 75 160 Z" fill="#f472b6" opacity="0.35" />
+          <ellipse cx="175" cy="85" rx="42" ry="32" fill="url(#glassGrad2)" stroke="#38bdf8" strokeWidth="3" />
+          
+          {/* Panda */}
+          <g transform="translate(152, 57)">
+            <path d="M14 36 Q8 42 4 48 Q10 46 16 42 Z" fill="#ef4444" className="animate-pulse" />
+            <rect x="13" y="32" width="20" height="7" rx="3.5" fill="#ef4444" />
+            <circle cx="9" cy="11" r="7.5" fill="#18181b" />
+            <circle cx="36" cy="11" r="7.5" fill="#18181b" />
+            <ellipse cx="22.5" cy="23" rx="18.5" ry="16" fill="#ffffff" stroke="#f1f5f9" strokeWidth="1.2" />
+            <ellipse cx="14.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(-18 14.5 20.5)" />
+            <ellipse cx="30.5" cy="20.5" rx="6.5" ry="5.5" fill="#18181b" transform="rotate(18 30.5 20.5)" />
+            <circle cx="15.5" cy="20" r="2.8" fill="#ffffff" />
+            <circle cx="16.2" cy="19.5" r="1.3" fill="#09090b" />
+            <circle cx="29.5" cy="20" r="2.8" fill="#ffffff" />
+            <circle cx="28.8" cy="19.5" r="1.3" fill="#09090b" />
+            <path d="M13 10 C16 4, 29 4, 32 10 Z" fill="#92400e" />
+            <rect x="11.5" y="9" width="22" height="3.5" rx="1.75" fill="#b45309" />
+            <ellipse cx="22.5" cy="26.5" rx="3" ry="2" fill="#18181b" />
+            <path d="M19.5 29 Q22.5 32 25.5 29" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+            <circle cx="10" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+            <circle cx="35" cy="26" r="3.2" fill="#fb7185" opacity="0.65" />
+          </g>
+
+          <circle cx="218" cy="128" r="8" fill="#fda4af" opacity="0.8" />
+          <circle cx="228" cy="112" r="5" fill="#1e293b" />
+          <circle cx="229.5" cy="110.5" r="2" fill="#ffffff" />
+          <path d="M236 124 Q240 130 246 124" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <path d="M110 126 C110 126, 80 185, 125 185 C165 185, 185 130, 185 126 Z" 
+                fill="url(#wingGrad2)" stroke="#0284c7" strokeWidth="2.5" />
+          <ellipse cx="255" cy="118" rx="7" ry="12" fill="#f43f5e" />
+          <g className="propeller-spin" style={{ transformOrigin: '258px 118px' }}>
+            <ellipse cx="258" cy="85" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+            <ellipse cx="258" cy="151" rx="5.5" ry="32" fill="#38bdf8" opacity="0.85" />
+          </g>
+          <circle cx="258" cy="118" r="6" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" />
+        </svg>
+      </div>
+    );
+
+    function SkyLetterPage() {
+      // Các trạng thái:
+      // 'rain' (mưa hàng ngàn lá thư 5s)
+      // 'pink_drop' (lá thư hồng rơi xuống)
+      // 'opened' (bung mở thuần nội dung)
+      // 'packing' (cuộn lại đóng gói)
+      // 'plane_takeoff' (máy bay kéo hòm thư bay đi)
+      const [stage, setStage] = useState('rain');
+      const canvasRef = useRef(null);
+
+      // 1. HIỆU ỨNG MƯA HÀNG NGÀN LÁ THƯ RƠI TRONG 5S
+      useEffect(() => {
+        if (stage !== 'rain') return;
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+
+        const setSize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        };
+        setSize();
+        window.addEventListener('resize', setSize);
+
+        // Tạo mảng hàng trăm phong bì thư
+        const letterCount = 140;
+        const letters = [];
+        const colors = ['#f472b6', '#fb7185', '#ffffff', '#fda4af', '#fbcfe8', '#bae6fd'];
+
+        for (let i = 0; i < letterCount; i++) {
+          letters.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * -canvas.height * 1.5,
+            width: Math.random() * 16 + 14,
+            height: Math.random() * 10 + 9,
+            speedY: Math.random() * 2.8 + 2.2,
+            speedX: Math.random() * 1.6 - 0.8,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.05,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            opacity: Math.random() * 0.6 + 0.4
+          });
+        }
+
+        const renderRain = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          letters.forEach(l => {
+            l.y += l.speedY;
+            l.x += l.speedX + Math.sin(l.y * 0.015) * 0.5;
+            l.rotation += l.rotSpeed;
+
+            if (l.y > canvas.height + 30) {
+              l.y = -40;
+              l.x = Math.random() * canvas.width;
+            }
+
+            ctx.save();
+            ctx.translate(l.x, l.y);
+            ctx.rotate(l.rotation);
+            ctx.globalAlpha = l.opacity;
+
+            // Vẽ phong bì mini
+            ctx.fillStyle = l.color;
+            ctx.fillRect(-l.width / 2, -l.height / 2, l.width, l.height);
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-l.width / 2, -l.height / 2, l.width, l.height);
+
+            // Nếp gấp phong bì
+            ctx.beginPath();
+            ctx.moveTo(-l.width / 2, -l.height / 2);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(l.width / 2, -l.height / 2);
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.stroke();
+
+            ctx.restore();
+          });
+
+          animationFrameId = requestAnimationFrame(renderRain);
+        };
+
+        renderRain();
+
+        // Đúng 5 giây chuyển sang lá thư màu hồng xuất hiện và mở ngay
+        const rainTimer = setTimeout(() => {
+          setStage('pink_drop');
+          // Sau khi thư hồng đáp xuống nhẹ (0.8s) thì bung mở ngay lập tức
+          setTimeout(() => {
+            setStage('opened');
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#f43f5e', '#ec4899', '#38bdf8', '#ffffff']
+            });
+          }, 850);
+        }, 5000);
+
+        return () => {
+          cancelAnimationFrame(animationFrameId);
+          clearTimeout(rainTimer);
+          window.removeEventListener('resize', setSize);
+        };
+      }, [stage]);
+
+      // HÀM XỬ LÝ KHI BẤM NÚT "Đi đến hành trình 20 năm của em"
+      const handleGoToJourney = () => {
+        // 1. Cuộn lại đóng gói bức thư
+        setStage('packing');
+
+        // 2. Sau khi cuộn gói lại (1.3s), máy bay kéo hòm thư bay qua và chuyển trang
+        setTimeout(() => {
+          setStage('plane_takeoff');
+
+          // Pháo hoa chào mừng hành trình
+          confetti({
+            particleCount: 160,
+            spread: 90,
+            origin: { y: 0.5 },
+            colors: ['#f43f5e', '#fb7185', '#38bdf8', '#fef08a']
+          });
+
+          // Bay thẳng đến trang hanhtrinh20.html
+          setTimeout(() => {
+            try {
+              if (window.location && typeof window.location.href === 'string') {
+                const targetUrl = new URL('hanhtrinh20.html', window.location.href).href;
+                window.location.assign(targetUrl);
+              }
+            } catch (err) {
+              console.warn("Chuyển trang sang hanhtrinh20.html:", err);
+            }
+          }, 3200);
+        }, 1300);
+      };
+
+      return (
+        <div className="relative w-full max-w-4xl flex flex-col items-center justify-center my-auto z-20">
+          
+          {/* MẶT TRỜI TỎA NẮNG DỊU DÀNG */}
+          <div className="fixed -top-20 -left-20 w-80 h-80 rounded-full bg-gradient-to-br from-amber-200/80 via-yellow-100/40 to-transparent blur-3xl pointer-events-none z-0"></div>
+
+          {/* MÂY TRÔI NỀN */}
+          <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+            <svg className="cloud-drift-1 absolute top-[10%] text-white/70 filter drop-shadow-sm w-44 h-24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+            <svg className="cloud-drift-2 absolute top-[40%] text-white/50 filter drop-shadow-sm w-64 h-36" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+            <svg className="cloud-drift-3 absolute bottom-[12%] text-white/60 filter drop-shadow-sm w-52 h-28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+          </div>
+
+          {/* 1. CANVAS MƯA HÀNG NGÀN LÁ THƯ RƠI TRONG 5S */}
+          {stage === 'rain' && (
+            <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-30 w-full h-full" />
+          )}
+
+          {/* 2. LÁ THƯ MÀU HỒNG ĐÁP XUỐNG */}
+          {stage === 'pink_drop' && (
+            <div className="animate-pink-appear flex flex-col items-center justify-center p-4 z-40">
+              <div className="relative w-[310px] h-[210px] sm:w-[380px] sm:h-[250px] bg-gradient-to-tr from-pink-400 via-rose-300 to-pink-200 rounded-[28px] p-5 shadow-[0_25px_60px_rgba(244,63,94,0.4)] border-4 border-white flex flex-col justify-between overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-28 pointer-events-none">
+                  <svg className="w-full h-full" viewBox="0 0 400 160" preserveAspectRatio="none">
+                    <polygon points="0,0 400,0 200,120" fill="rgba(255, 255, 255, 0.7)" stroke="rgba(244, 114, 182, 0.4)" strokeWidth="1.5" />
+                  </svg>
+                </div>
+                <div className="text-center relative z-10">
+                </div>
+                <div className="self-center relative z-10">
+                  <div className="w-16 h-16 rounded-full bg-rose-500 shadow-lg flex items-center justify-center border-2 border-white animate-bounce">
+                    <span className="text-2xl"></span>
+                  </div>
+                </div>
+                <div className="text-center relative z-10">
+                  <p className="text-xs font-black text-rose-700">Đang mở lá thư dành riêng cho em...</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3. LÁ THƯ MỞ RA THUẦN NỘI DUNG VÀ NÚT ĐI ĐẾN HÀNH TRÌNH 20 NĂM */}
+          {(stage === 'opened' || stage === 'packing') && (
+            <div className="w-full px-2 sm:px-4 py-4 z-40">
+              <div className={`${stage === 'opened' ? 'animate-unroll-letter' : 'animate-letter-pack-up'} relative bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_25px_60px_rgba(14,116,144,0.2)] border-4 border-pink-200 overflow-hidden`}>
+                
+                {/* Nẹp viền hồng hai đầu trang thư */}
+                <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-r from-pink-400 to-rose-300"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-gradient-to-l from-pink-400 to-rose-300"></div>
+
+                {/* TIÊU ĐỀ BỨC THƯ */}
+                <div className="text-center mb-6">
+                  <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-rose-600 leading-snug tracking-tight">
+                    Gửi đến em!
+                  </h1>
+                  <div className="w-24 h-1 bg-gradient-to-r from-pink-300 via-rose-400 to-pink-300 mx-auto rounded-full mt-3"></div>
+                </div>
+
+                {/* THUẦN NỘI DUNG TÂM THƯ */}
+                <div className="letter-scroll-area font-letter-body max-h-[58vh] overflow-y-auto pr-2 sm:pr-4 text-slate-700 leading-relaxed sm:leading-loose text-base sm:text-lg md:text-xl space-y-4 text-justify">
+                  <p>
+                    Hôm nay tròn 20 năm ngày em đặt chân đến với thế giới!
+                  </p>
+                  <p>
+                    Bầu trời 20 năm trước đã dành tặng cho em một hành trình, 20 năm sau anh dành tặng em một ngày sinh nhật thật ý nghĩa.
+                  </p>
+
+                  <p>
+                    Anh nghĩ em sẽ hạnh phúc khi thấy món quà ngày hôm nay!
+                  </p>
+
+                  <p>
+                    Anh không dành tặng em những điều xa hoa như những cặp đôi khác dành cho nhau, anh sẽ dành tặng những điều mà anh có thể làm được và anh mong sẽ dành tặng em cả bầu trời hạnh phúc.
+                  </p>
+
+                  <p>
+                    Anh không dám chắc đây là món quà đắc tiền nhưng đây sẽ là món quà ý nghĩa nhất mà anh dành tặng cho em, anh hi vọng em đón nhận tình cảm cùng với sự chân thành của anh!
+                  </p>
+
+                  <p>
+                    Cảm ơn em đã cùng anh vượt qua nhiều vấp ngã trong cuộc sống, cảm ơn em đã dành tình yêu thương của một người bạn đồng hành đến với anh. Anh mong bây giờ, ngay lúc này và cả mãi về sau em sẽ hạnh phúc với những điều giản đơn cùng với anh.
+                  </p>
+
+                  <p>
+                    Hôm nay là ngày của em!
+                  </p>
+
+                  <p>
+                    Anh chúc mọi sự tốt đẹp, mọi sự yêu thương cùng với sự đáng yêu này đến với em.
+                  </p>
+
+                  <p className="font-semibold text-slate-800">
+                    Lời cuối trong lá thư này anh muốn nói là...
+                  </p>
+
+                  <p className="p-5 bg-gradient-to-r from-rose-50/90 via-pink-50/80 to-rose-50/90 rounded-2xl border-l-4 border-rose-500 italic text-rose-800 font-medium text-base sm:text-lg md:text-xl leading-relaxed shadow-sm">
+                    “Cảm ơn em đến với cuộc đời của anh, anh sẽ dành cả thanh xuân này đến với em. Anh sẽ cùng em viết tiếp cuộc đời mang tên chúng ta!”
+                  </p>
+
+                  {/* KÝ TÊN */}
+                  <div className="pt-6 pb-2 text-right">
+                    <div className="font-handwriting text-3xl sm:text-4xl md:text-5xl font-bold text-rose-600">
+                      With Em Mèo!
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* NÚT: ĐI ĐẾN HÀNH TRÌNH 20 NĂM CỦA EM */}
+                <div className="mt-8 pt-4 border-t border-pink-100 flex flex-col items-center justify-center">
+                  <button
+                    onClick={handleGoToJourney}
+                    disabled={stage === 'packing'}
+                    className="inline-flex items-center gap-3 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-sm sm:text-base px-8 py-4 rounded-full shadow-[0_10px_25px_rgba(244,63,94,0.4)] hover:shadow-[0_15px_35px_rgba(244,63,94,0.5)] transform hover:-translate-y-1 active:translate-y-0 transition-all cursor-pointer group"
+                  >
+                    <span>Đi đến hành trình 20 năm của em</span>
+                    <span className="text-xl group-hover:translate-x-1.5 transition-transform duration-300"></span>
+                  </button>
+                  <p className="text-xs text-rose-400 font-semibold mt-2">
+                    Em nhấn đóng gói thư đi...
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* 4. CHUYẾN BAY MÁY BAY KÉO HÒM THƯ BAY THẲNG ĐẾN HANHTRINH20.HTML */}
+          {stage === 'plane_takeoff' && (
+            <div className="animate-plane-takeoff fixed top-0 left-0 pointer-events-none z-50">
+              <CutePlaneTakeoff />
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<SkyLetterPage />);
+  </script>
+</body>
+</html>
